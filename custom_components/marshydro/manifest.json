@@ -1,5 +1,5 @@
 {
-  "domain": "marshydro",
+  "domain": "marspro",
   "name": "Mars Hydro Cloud Integration",
   "codeowners": ["@suppqt"],
   "config_flow": true,
