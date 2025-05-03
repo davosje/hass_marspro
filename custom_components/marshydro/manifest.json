@@ -5,7 +5,7 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/suppqt/hass_mars_hydro",
-  "iot_class": "local_push",
+  "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/suppqt/hass_mars_hydro/issues",
   "requirements": ["requests>=2.26.0"],
   "version": "1.0.4"
