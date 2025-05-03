@@ -1,3 +1,3 @@
-DOMAIN = "marshydro"
+DOMAIN = "marspro"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
