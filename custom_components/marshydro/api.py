@@ -12,7 +12,7 @@ class MarsHydroAPI:
         self.email = email
         self.password = password
         self.token = None
-        self.base_url = "https://api.lgledsolutions.com/api/android"
+        self.base_url = "https://mars-pro.api.lgledsolutions.com/api/android"
         self.api_lock = asyncio.Lock()
         self.last_login_time = 0
         self.login_interval = 300  # Minimum interval between logins in seconds
