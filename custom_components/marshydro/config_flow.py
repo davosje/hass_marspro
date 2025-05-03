@@ -1,104 +1,89 @@
-from homeassistant import config_entries
-from homeassistant.core import callback
-from homeassistant.data_entry_flow import FlowResult
-import voluptuous as vol
-from .const import DOMAIN
+"""Config flow for MarsPro integration."""
 import logging
+from typing import Any, Dict, Optional
+
+import voluptuous as vol
+
+from homeassistant import config_entries, core, exceptions
+from homeassistant.const import (
+    CONF_USERNAME,
+    CONF_PASSWORD,
+    CONF_NAME,
+)
+from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 _LOGGER = logging.getLogger(__name__)
 
+# Make compatible with the main integration
+from .marspro_integration import MarsProApi
 
-class MarsHydroConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Mars Hydro."""
+# Schema for config flow
+DATA_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_USERNAME): str,
+        vol.Required(CONF_PASSWORD): str,
+        vol.Optional(CONF_NAME, default="MarsPro"): str,
+    }
+)
+
+
+async def validate_input(hass: core.HomeAssistant, data: dict) -> dict:
+    """Validate the user input allows us to connect.
+
+    Data has the keys from DATA_SCHEMA with values provided by the user.
+    """
+    username = data[CONF_USERNAME]
+    password = data[CONF_PASSWORD]
+    
+    session = async_get_clientsession(hass)
+    api = MarsProApi(username, password, session)
+
+    try:
+        result = await api.login()
+        if not result:
+            raise InvalidAuth
+    except Exception as exception:
+        _LOGGER.error(f"Connection error: {exception}")
+        raise CannotConnect from exception
+
+    # Return info that you want to store in the config entry.
+    return {"title": data[CONF_NAME]}
+
+
+class MarsProConfigFlow(config_entries.ConfigFlow, domain="marspro"):
+    """Handle a config flow for MarsPro."""
 
     VERSION = 1
+    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
-    def __init__(self):
-        self._email = None
-        self._password = None
-
-    async def async_step_user(self, user_input=None) -> FlowResult:
+    async def async_step_user(
+        self, user_input: Optional[Dict[str, Any]] = None
+    ) -> FlowResult:
         """Handle the initial step."""
         errors = {}
-
+        
         if user_input is not None:
-            self._email = user_input["email"]
-            self._password = user_input["password"]
-
-            if not self._validate_email(self._email):
-                errors["email"] = "invalid_email"
-            else:
-                login_success = await self._test_login(self._email, self._password)
-                if login_success:
-                    return self.async_create_entry(
-                        title="Mars Hydro",
-                        data={"email": self._email, "password": self._password},
-                    )
-                else:
-                    errors["base"] = "cannot_connect"
-
-        # Schema für das Eingabeformular
-        data_schema = vol.Schema(
-            {
-                vol.Required("email"): str,
-                vol.Required("password"): str,
-            }
-        )
+            try:
+                info = await validate_input(self.hass, user_input)
+                
+                return self.async_create_entry(title=info["title"], data=user_input)
+            except CannotConnect:
+                errors["base"] = "cannot_connect"
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=data_schema,
-            errors=errors,
+            step_id="user", data_schema=DATA_SCHEMA, errors=errors
         )
 
-    async def _test_login(self, email: str, password: str) -> bool:
-        """Test the API login."""
-        from .api import MarsHydroAPI
 
-        api = MarsHydroAPI(email, password)
-        try:
-            await api.login()
-            return True
-        except Exception as e:
-            _LOGGER.error("Error testing login credentials: %s", e)
-            return False
-
-    @staticmethod
-    def _validate_email(email: str) -> bool:
-        """Validate an email address."""
-        import re
-
-        email_regex = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-        return re.match(email_regex, email) is not None
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: config_entries.ConfigEntry):
-        """Get the options flow."""
-        return MarsHydroOptionsFlow(config_entry)
+class CannotConnect(exceptions.HomeAssistantError):
+    """Error to indicate we cannot connect."""
 
 
-class MarsHydroOptionsFlow(config_entries.OptionsFlow):
-    """Handle an options flow for Mars Hydro."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry):
-        self.config_entry = config_entry
-
-    async def async_step_init(self, user_input=None) -> FlowResult:
-        """Handle the options flow."""
-        errors = {}
-
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
-        options_schema = vol.Schema(
-            {
-                vol.Required("update_interval", default=30): int,
-            }
-        )
-
-        return self.async_show_form(
-            step_id="init",
-            data_schema=options_schema,
-            errors=errors,
-        )
+class InvalidAuth(exceptions.HomeAssistantError):
+    """Error to indicate there is invalid auth."""
