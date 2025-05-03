@@ -90,7 +90,7 @@ class MarsHydroAPI:
                 return response_json
 
 
-    async def _process_device_list(self, product_type):
+    async def _process_device_list(self, product_group):
         """Retrieve device list for a given product type."""
         await self._ensure_token()
         system_data = self._generate_system_data()
@@ -101,7 +101,8 @@ class MarsHydroAPI:
             "User-Agent": "Python/3.x",
             "systemData": system_data,
         }
-        payload = {"currentPage": 0, "type": None, "productType": product_type}
+        payload = {"currentPage": 1, "type": None, "deviceProductGroup": product_group}
+
 
         async with aiohttp.ClientSession() as session:
             async with session.post(
