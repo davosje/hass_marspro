@@ -97,7 +97,7 @@ class MarsHydroAPI:
         headers = {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json",
-            "Host": "api.lgledsolutions.com",
+            "Host": "mars-pro.api.lgledsolutions.com",
             "User-Agent": "Python/3.x",
             "systemData": system_data,
         }
@@ -165,7 +165,7 @@ class MarsHydroAPI:
         headers = {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json",
-            "Host": "api.lgledsolutions.com",
+            "Host": "mars-pro.api.lgledsolutions.com",
             "systemData": system_data,
             "User-Agent": "Python/3.x",
         }
@@ -194,7 +194,7 @@ class MarsHydroAPI:
         headers = {
             "Accept-Encoding": "gzip",
             "Content-Type": "application/json",
-            "Host": "api.lgledsolutions.com",
+            "Host": "mars-pro.api.lgledsolutions.com",
             "systemData": system_data,
             "User-Agent": "Python/3.x",
         }
