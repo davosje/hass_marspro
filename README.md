@@ -9,6 +9,8 @@
 
 [![Community Forum][forum-shield]][forum]
 
+DOESN'T WORK!!
+
 ## Mars Hydro Cloud Integration
 This integration communicates with the Mars Hydro Cloud and controls and monitors your Mars Hydro devices (lights and fans) through Home Assistant.
 
@@ -92,3 +94,4 @@ If you want to contribute to this integration, please read the [Contribution gui
 [maintenance-shield]: https://img.shields.io/badge/maintainer-%20%40suppqt-blue.svg?style=for-the-badge
 [releases-shield]: https://img.shields.io/github/release/suppqt/ha_mars_hydro.svg?style=for-the-badge
 [releases]: https://github.com/suppqt/ha_mars_hydro/releases
+
